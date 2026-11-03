@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Real-time Surveillance Perception · Max Chan</title>
+  <meta name="description" content="Six detectors sharing one GPU on a patrol robot's camera feed, exported to TensorRT FP16 for up to 2.4x faster inference with 99.6%+ recall parity, wired into the robot fleet's alert API.">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../" aria-label="Max Chan, home">
+      <img class="brand-mark" src="../assets/favicon.svg" alt="">
+      Max Chan
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="../#work">Work</a>
+      <a class="nav-hide" href="../#experience">Experience</a>
+      <a class="nav-hide" href="../#contact">Contact</a>
+      <a class="nav-cv" href="../assets/Max_Chan_Resume.pdf">Résumé</a>
+      <button class="theme-btn" type="button" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="cs-head">
+    <div class="wrap">
+      <a class="back mono" href="../#work">← All work</a>
+      <p class="label" style="margin-bottom:16px">Case study 02 · Botmind · 2026</p>
+      <h1>Real-time surveillance perception</h1>
+      <div class="cs-intro">
+        <p class="lede">
+          A patrolling security robot streams one wide camera feed. The job: watch it for fire, falls, running,
+          crowding, fights and unattended bags <strong>all at once, on one GPU</strong>, and turn each detection
+          into an alert the robot fleet can act on.
+        </p>
+        <dl class="cs-facts">
+          <div><dt class="label">Role</dt><dd>Robot Engineering Intern: runtime, TensorRT export, benchmarks, alert integration</dd></div>
+          <div><dt class="label">Timeline</dt><dd>Jul – Dec 2026</dd></div>
+          <div><dt class="label">Stack</dt><dd>PyTorch, TensorRT, CUDA, Ultralytics YOLO, ByteTrack, OpenPifPaf, Streamlit</dd></div>
+          <div><dt class="label">Target</dt><dd>One RTX 4070 Ti SUPER; also runs on Apple MPS and CPU</dd></div>
+        </dl>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="n">6</div><p class="mono">detectors running at once on one feed</p></div>
+        <div class="stat"><div class="n">2.4<em>×</em></div><p class="mono">model speedup with TensorRT FP16</p></div>
+        <div class="stat"><div class="n">365</div><p class="mono">FPS peak (pose model, TensorRT)</p></div>
+        <div class="stat"><div class="n">99.6<em>%</em></div><p class="mono">min. recall vs PyTorch after export</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">01</span><h2>Six models, one GPU, no lag</h2></div></div>
+      <div class="chapter-body">
+        <p>Each use case needs a different model and different logic, but they all share the same frames and the same GPU. The runtime makes sure a slow model never stalls the video or the other detectors.</p>
+        <ul>
+          <li><strong>One shared grabber</strong> keeps only the newest frame. RTSP is forced over TCP with low-latency FFmpeg flags, so lossy Wi-Fi doesn’t produce torn frames and detectors always analyse <em>now</em>.</li>
+          <li><strong>One thread per detector</strong>, each at its own pace. A heavy model (crowd density at 1280 px) just updates its label less often.</li>
+          <li><strong>Every frame normalised</strong> to the robot camera’s 2048×576 panorama, with rectangular inference at 1280×384 so no compute is wasted on letterbox padding.</li>
+          <li><strong>A shared output contract</strong> (status + label) for every detector, so adding a new model is one small class and it shows up in the UI automatically.</li>
+        </ul>
+        <figure>
+          <div class="diagram diagram-scroll">
+            <svg viewBox="0 0 900 330" role="img" aria-label="Architecture: robot camera to a shared frame grabber, fanned out to six detector threads, which feed an alert publisher and the operator UI">
+              <defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" class="arrowhead"/></marker></defs>
+              <rect class="box" x="4" y="135" width="140" height="60" rx="5"/>
+              <text class="t" x="18" y="160">Robot camera</text><text class="t-s" x="18" y="180">RTSP over TCP</text>
+              <rect class="box-ink" x="180" y="135" width="150" height="60" rx="5"/>
+              <text class="t-inv" x="194" y="160">Shared grabber</text><text class="t-s" x="194" y="180" style="fill:var(--bg);opacity:.7">newest frame only</text>
+              <path class="ln" d="M144 165 H176" marker-end="url(#ah)"/>
+              <path class="ln" d="M330 165 H360 M360 33 V297"/>
+              <g>
+                <path class="ln" d="M360 33 H386" marker-end="url(#ah)"/><path class="ln" d="M360 85 H386" marker-end="url(#ah)"/><path class="ln" d="M360 137 H386" marker-end="url(#ah)"/>
+                <path class="ln" d="M360 193 H386" marker-end="url(#ah)"/><path class="ln" d="M360 245 H386" marker-end="url(#ah)"/><path class="ln" d="M360 297 H386" marker-end="url(#ah)"/>
+              </g>
+              <g>
+                <rect class="box" x="390" y="13" width="230" height="40" rx="5"/><text class="t" x="404" y="38">Fire / smoke</text><text class="t-s" x="520" y="38">YOLOv5</text>
+                <rect class="box" x="390" y="65" width="230" height="40" rx="5"/><text class="t" x="404" y="90">Fall</text><text class="t-s" x="520" y="90">OpenPifPaf</text>
+                <rect class="box" x="390" y="117" width="230" height="40" rx="5"/><text class="t" x="404" y="142">Running</text><text class="t-s" x="520" y="142">YOLO26n+BT</text>
+                <rect class="box" x="390" y="173" width="230" height="40" rx="5"/><text class="t" x="404" y="198">Crowd density</text><text class="t-s" x="520" y="198">YOLO26m</text>
+                <rect class="box" x="390" y="225" width="230" height="40" rx="5"/><text class="t" x="404" y="250">Fight</text><text class="t-s" x="520" y="250">v8n-pose+cls</text>
+                <rect class="box" x="390" y="277" width="230" height="40" rx="5"/><text class="t" x="404" y="302">Abandoned bag</text><text class="t-s" x="520" y="302">YOLO11m+BT</text>
+              </g>
+              <path class="ln" d="M620 33 H650 M620 85 H650 M620 137 H650 M620 193 H650 M620 245 H650 M620 297 H650 M650 33 V297"/>
+              <path class="ln-acc" d="M650 110 H676" marker-end="url(#ah)"/>
+              <path class="ln" d="M650 222 H676" marker-end="url(#ah)"/>
+              <rect class="box-accent" x="680" y="78" width="216" height="64" rx="5"/>
+              <text class="t" x="694" y="104">Alert publisher</text><text class="t-acc" x="694" y="124">queue · retry · OAuth renew</text>
+              <rect class="box" x="680" y="190" width="216" height="64" rx="5"/>
+              <text class="t" x="694" y="216">Operator UI</text><text class="t-s" x="694" y="236">clean video + status labels</text>
+              <text class="t-s" x="390" y="6" style="font-size:10px">ONE THREAD EACH</text>
+            </svg>
+          </div>
+          <figcaption><span class="mono">Fig. 1</span><span>Runtime architecture. The video shown to operators stays clean: models report only text labels, and an alert carries an unannotated snapshot of the moment.</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">02</span><h2>TensorRT: faster, and provably the same</h2></div></div>
+      <div class="chapter-body">
+        <p>Because all detectors share one GPU, what matters is the total GPU time per sweep. I exported the YOLO models to TensorRT FP16 engines and wrote a benchmark harness that measures both raw model latency and the deployed per-frame cost through the real detector code.</p>
+        <figure>
+          <div class="diagram">
+            <div class="chart">
+              <div class="chart-legend mono"><span><i style="background:var(--muted);opacity:.45"></i>PyTorch FP32</span><span><i style="background:var(--accent)"></i>TensorRT FP16</span><span>ms per frame, lower is better</span></div>
+              <div class="chart-row">
+                <div class="name">Running<span class="mono">yolo26n · 2.32×</span></div>
+                <div class="chart-bars">
+                  <div class="chart-bar"><div class="track"><div class="fill" style="width:83.3%"></div></div><span class="v">7.5 ms</span></div>
+                  <div class="chart-bar trt"><div class="track"><div class="fill" style="width:36.7%"></div></div><span class="v">3.3 ms</span></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="name">Crowd<span class="mono">yolo26m @1280 · 1.79×</span></div>
+                <div class="chart-bars">
+                  <div class="chart-bar"><div class="track"><div class="fill" style="width:97.8%"></div></div><span class="v">8.8 ms</span></div>
+                  <div class="chart-bar trt"><div class="track"><div class="fill" style="width:54.4%"></div></div><span class="v">4.9 ms</span></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="name">Fight<span class="mono">yolov8n-pose · 2.38×</span></div>
+                <div class="chart-bars">
+                  <div class="chart-bar"><div class="track"><div class="fill" style="width:72.2%"></div></div><span class="v">6.5 ms</span></div>
+                  <div class="chart-bar trt"><div class="track"><div class="fill" style="width:30%"></div></div><span class="v">2.7 ms</span></div>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="name">Abandoned bag<span class="mono">yolo11m · 2.11×</span></div>
+                <div class="chart-bars">
+                  <div class="chart-bar"><div class="track"><div class="fill" style="width:85.6%"></div></div><span class="v">7.7 ms</span></div>
+                  <div class="chart-bar trt"><div class="track"><div class="fill" style="width:41.1%"></div></div><span class="v">3.7 ms</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption><span class="mono">Fig. 2</span><span>Model-level latency on an RTX 4070 Ti SUPER (CUDA 12.4, TensorRT 10.16, dynamic FP16 engines). Through the full pipeline the speedup is 1.6–2.0×, since pre/post-processing and tracking don’t change.</span></figcaption>
+        </figure>
+        <p>One full sweep of all six detectors dropped from <strong>53.1 ms to 38.0 ms</strong>, about 28% less GPU time. That headroom is what lets one card run the models more often, or take on more detectors.</p>
+
+        <h3>Checking accuracy without labels</h3>
+        <p>A faster engine is only useful if it still finds the same things. With PyTorch FP32 as the reference, both ran over the same 286 frames per model, and every box was matched at IoU 0.5.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Model</th><th class="num">Recall vs PT</th><th class="num">Precision vs PT</th><th class="num">Mean IoU</th><th class="num">Conf. MAE</th></tr></thead>
+            <tbody>
+              <tr><td>Running</td><td class="num">0.997</td><td class="num">0.997</td><td class="num">0.998</td><td class="num">0.001</td></tr>
+              <tr><td>Crowd</td><td class="num">0.997</td><td class="num">0.995</td><td class="num">0.997</td><td class="num">0.002</td></tr>
+              <tr><td>Fight</td><td class="num">1.000</td><td class="num">0.995</td><td class="num">0.994</td><td class="num">0.001</td></tr>
+              <tr><td>Abandoned bag</td><td class="num">0.996</td><td class="num">0.995</td><td class="num">0.997</td><td class="num">0.002</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Zero class mismatches, and small-object recall held up as well: 0.993 over 838 small boxes for crowd, 1.000 over 208 for bags. So distant people and small bags aren’t being lost in FP16.</p>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">03</span><h2>From detection to an alert someone acts on</h2></div></div>
+      <div class="chapter-body">
+        <p>Each detection becomes an alert in the robot fleet’s platform, tied to the robot and camera that saw it, with a clean snapshot attached.</p>
+        <ul>
+          <li>Resolves camera → robot from the stream, creates the alert, then uploads the snapshot as its preview image.</li>
+          <li>Sent from a <strong>background queue</strong>, so a slow network never blocks detection.</li>
+          <li><strong>OAuth tokens renew automatically</strong>; network errors and 5xx responses retry with backoff; at most one alert per type every 20 s to avoid floods.</li>
+          <li>Each detector debounces its trigger: an alert latches only after it persists for several frames, with a cooldown before it can fire again, so one noisy frame doesn’t page anyone.</li>
+        </ul>
+        <p>Alongside this I built Grafana dashboards over the fleet’s fault-reporting logs, so errors on deployed robots could be pinned down without digging through raw logs.</p>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">04</span><h2>In the field: PPE detection on a quadruped</h2></div></div>
+      <div class="chapter-body">
+        <p>I took real-time PPE detection from concept to a live client demo on a quadruped robot in an aircraft hangar <strong>in under three days</strong>: the robot walks the hangar floor and flags anyone missing required safety gear.</p>
+        <p>The constraints were the opposite of the airport pipeline’s:</p>
+        <ul>
+          <li><strong>Edge device, not a desktop GPU.</strong> Detection runs on the robot itself, so the model and frame size had to fit its compute budget while staying real-time.</li>
+          <li><strong>A moving camera.</strong> A walking robot sees people at changing distances and angles, which is harder than the fixed cameras most PPE models are trained on.</li>
+          <li><strong>A live audience.</strong> The client watched it run in their own hangar, so it had to work first time, in their lighting, with their people.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <nav class="next" aria-label="Next project">
+    <div class="wrap">
+      <a href="gibson-assistant.html">
+        <div><p class="label">Next · 03</p><h2>Patrol-robot operator assistant</h2></div>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </nav>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap mono">
+    <span>© 2026 Max Chan</span>
+    <a href="mailto:maxchan352@gmail.com" style="text-decoration:none">maxchan352@gmail.com</a>
+  </div>
+</footer>
+
+<script src="../assets/js/site.js" defer></script>
+</body>
+</html>

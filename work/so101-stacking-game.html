@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Human vs Robot Box-Stacking · Max Chan</title>
+  <meta name="description" content="A turn-based stacking game against an SO-101 arm whose skill was trained only in a calibrated MuJoCo digital twin, with a camera referee and a safety layer for playing next to people.">
+  <meta property="og:image" content="../assets/media/so101/sim-carry.jpg">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../" aria-label="Max Chan, home">
+      <img class="brand-mark" src="../assets/favicon.svg" alt="">
+      Max Chan
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="../#work">Work</a>
+      <a class="nav-hide" href="../#experience">Experience</a>
+      <a class="nav-hide" href="../#contact">Contact</a>
+      <a class="nav-cv" href="../assets/Max_Chan_Resume.pdf">Résumé</a>
+      <button class="theme-btn" type="button" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="cs-head">
+    <div class="wrap">
+      <a class="back mono" href="../#work">← All work</a>
+      <p class="label" style="margin-bottom:16px">Case study 01 · Personal project · 2026</p>
+      <h1>Human vs Robot Box&#8209;Stacking</h1>
+      <div class="cs-intro">
+        <p class="lede">
+          A person and an SO-101 arm take turns stacking staple boxes of three sizes. Drop a box or topple the stack
+          and you lose. The rule I set myself: <strong>no real demonstrations</strong>. Every bit of training data
+          came from a MuJoCo twin of the table, and the real setup was used only to calibrate and to test.
+        </p>
+        <dl class="cs-facts">
+          <div><dt class="label">Role</dt><dd>Solo: hardware setup, sim, training, perception, game</dd></div>
+          <div><dt class="label">Timeline</dt><dd>Oct – Nov 2026</dd></div>
+          <div><dt class="label">Stack</dt><dd>MuJoCo, LeRobot (ACT), PyTorch, OpenCV, Python</dd></div>
+          <div><dt class="label">Hardware</dt><dd>SO-101 arm, 45° front camera, Orbbec wrist camera; trained on an RTX 4070 Ti SUPER</dd></div>
+          <div><dt class="label">Code</dt><dd><a href="https://github.com/ka1dus/so101_stack_game">github.com/ka1dus/so101_stack_game</a></dd></div>
+        </dl>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="n">7,000</div><p class="mono">synthetic demonstrations, zero real ones</p></div>
+        <div class="stat"><div class="n">8<em>/</em>10</div><p class="mono">robot placements that stayed up in real games</p></div>
+        <div class="stat"><div class="n">75<em>/</em>75</div><p class="mono">turns called right by the referee, 10 sim games</p></div>
+        <div class="stat"><div class="n">0<em>/</em>56</div><p class="mono">false collapse calls on labelled real trials</p></div>
+      </div>
+
+      <figure class="cs-hero">
+        <div class="fig-media dark">
+          <video data-autoplay muted loop playsinline preload="metadata" poster="../assets/media/so101/real-game.jpg"
+                 aria-label="Screen recording of a real game with the referee overlay">
+            <source src="../assets/media/so101/real-game.mp4" type="video/mp4">
+          </video>
+        </div>
+        <figcaption><span class="mono">Fig. 1</span><span>A real game, 30 Oct 2026, as the player sees it: the game’s own window with the live front camera, the stack it has tracked so far (green and red dots mark full and empty supply slots), and the workspace outline that freezes the arm when a hand comes in.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">01</span><h2>The idea: learn one skill, code the rest</h2></div></div>
+      <div class="chapter-body">
+        <p>Learning a whole game end to end would need far more data than one person can make, and would be
+          impossible to debug. So the robot learns exactly one physical skill in simulation: <em>pick the next box from the supply
+          and put it gently on the stack</em>. Everything else is ordinary code that I can test.</p>
+        <ul>
+          <li><strong>Learned in sim:</strong> the pick-and-place skill (ACT policy, 30 Hz, two cameras + joint state).</li>
+          <li><strong>Classical:</strong> game rules and turn-taking, a camera referee for drops and collapses, hand detection, e-stop and the UI.</li>
+          <li><strong>Mixed box sizes from day one:</strong> three MAX staple-box types (7.0, 6.0 and 5.2 cm long), so every evaluation is split by box type and by pairing, e.g. a large box onto a small one, the least stable case.</li>
+        </ul>
+        <figure>
+          <div class="fig-pair tall">
+            <div class="fig-media zoomable"><img src="../assets/media/so101/setup-topdown.jpg" alt="The real setup from above: SO-101 arm in the corner, black supply mat with eight boxes in a template, yellow stacking area" loading="lazy"></div>
+            <div class="fig-media zoomable"><img src="../assets/media/so101/setup-side.jpg" alt="The real setup from the side, with the black backdrop and the front camera" loading="lazy"></div>
+          </div>
+          <figcaption><span class="mono">Fig. 2</span><span>The real cell. Boxes start in a printed template on the black supply mat; the stack goes on the yellow area. The matte black backdrop was added because, from four boxes up, the front camera saw the top box against a white wall.</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">02</span><h2>A digital twin worth training in</h2></div></div>
+      <div class="chapter-body">
+        <p>If the twin is wrong, the policy learns the wrong lesson. Each part of the simulation was checked against a measurement from the real setup before any data was generated.</p>
+        <ul>
+          <li><strong>Joint mapping.</strong> Converted LeRobot’s calibrated degrees to simulator radians and fitted per-joint offsets from gripper-tip touches on table corners. Afterwards the table corners met at 89.8° (90° expected) and the mat sizes matched a ruler.</li>
+          <li><strong>Cameras.</strong> Fitted the front camera to real frames (2.6 px RMS). The wrist camera was later calibrated with a ChArUco board, after real trials showed a 2 cm release error that came from the camera model (19.7 → 5.1 px).</li>
+          <li><strong>Stack physics.</strong> Tuned friction and contact settings until sim boxes tipped at the same overhang as real ones, to within 1.5 mm for every pairing.</li>
+          <li><strong>Servos.</strong> The real STS3215 servos lag and sag; the default sim servos were 30–75× too stiff. I fitted the sim servo gains to the real arm’s measured response and trained with them.</li>
+        </ul>
+        <figure>
+          <div class="fig-media zoomable"><img src="../assets/media/so101/twin-overlay.jpg" alt="Sim and real front-camera frames of a three-box stack, side by side and blended" loading="lazy"></div>
+          <figcaption><span class="mono">Fig. 3</span><span>Camera calibration check: real frame, sim render and blends for a mixed three-box stack. Edges of the table, mats and boxes line up.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="fig-media zoomable"><img src="../assets/media/so101/twin-real-sim.jpg" alt="Real front and wrist camera frames at release, next to the sim twin at the same joint state" loading="lazy"></div>
+          <figcaption><span class="mono">Fig. 4</span><span>Replaying a real trial in the twin. Left half: the real front and wrist cameras at release. Right half: the twin at the same joint state. Comparisons like this traced each sim-to-real gap to its cause.</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">03</span><h2>A scripted expert makes the data</h2></div></div>
+      <div class="chapter-body">
+        <p>A scripted expert with access to the true state of the simulation generates the demonstrations. It uses inverse kinematics to pick a box and place it on randomised, deliberately crooked stacks.</p>
+        <ul>
+          <li>Picks by a fixed, visible rule (the reachable box nearest the stack), so ACT never sees two different actions for the same scene.</li>
+          <li>Places the new box where its centre of mass is best supported by every level below, not just over the top box. This matters most for a large box onto a small one.</li>
+          <li>Slow final descent, release a few millimetres above the top, retract straight up. Release and retract are where stacks fall.</li>
+          <li>Recovery data: DART-style noise injected while recording the clean expert’s actions, plus retry episodes after missed grasps.</li>
+          <li>Domain randomisation of lighting, textures (photo textures of the real boxes), camera pose and intrinsics, servo gains, and wall colour.</li>
+        </ul>
+        <figure>
+          <div class="fig-media dark">
+            <video data-autoplay muted loop playsinline preload="none" poster="../assets/media/so101/sim-episode.jpg" aria-label="A training episode: front and wrist camera renders as the expert places a box on a seven-box stack">
+              <source src="../assets/media/so101/sim-episode.mp4" type="video/mp4">
+            </video>
+          </div>
+          <figcaption><span class="mono">Fig. 5</span><span>One of the 7,000 training episodes as the policy sees it: front camera (left) and wrist camera (right), placing onto a seven-box mixed stack. 30 fps, 640×480 per camera.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="fig-media zoomable"><img src="../assets/media/so101/sim-randomisation.jpg" alt="Six sim renders of the same scene with different lighting, colours and camera pose" loading="lazy"></div>
+          <figcaption><span class="mono">Fig. 6</span><span>Domain randomisation: one scene, six draws of lighting, colours, textures and camera pose.</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">04</span><h2>Training, measured by bucket</h2></div></div>
+      <div class="chapter-body">
+        <p>I trained ACT policies with LeRobot and scored every version in simulation, split by stack height, crookedness, box type and pairing, so a weak spot couldn’t hide behind a good average.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Version</th><th>What changed</th><th class="num">Sim success</th></tr></thead>
+            <tbody>
+              <tr><td>ACT v1</td><td>2,000 episodes, defaults; 92 of 102 failures were missed grasps</td><td class="num">49%</td></tr>
+              <tr><td>ACT v2</td><td>Fresh 3,000 episodes: centred grasp, recovery and retry demos, half resolution, 300k steps</td><td class="num">72% <span class="mono">(same set)</span></td></tr>
+              <tr><td>ACT v2</td><td>Starting layouts that follow the game’s rules</td><td class="num">93%</td></tr>
+              <tr class="hl"><td>ACT v3</td><td>Expert fixed for tall stacks; +1,000 targeted episodes</td><td class="num"><strong>97%</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>All sim targets were met: ≥ 90% onto stacks of height 0–3 for every box type, ≥ 70% onto crooked stacks of 4+, and ≥ 70% for a large box onto a small one (84%). Most targets were also confirmed with 95% confidence bounds on a 1,060-episode evaluation.</p>
+        <figure>
+          <div class="fig-pair">
+            <div class="fig-media zoomable"><img src="../assets/media/so101/sim-grasp.jpg" alt="Sim render: the arm grasping a box from the supply mat" loading="lazy"></div>
+            <div class="fig-media zoomable"><img src="../assets/media/so101/sim-release.jpg" alt="Sim render: the arm releasing a box onto a stack" loading="lazy"></div>
+          </div>
+          <figcaption><span class="mono">Fig. 7</span><span>Grasp from the supply and release over the stack in the twin.</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">05</span><h2>Closing the sim-to-real gap</h2></div></div>
+      <div class="chapter-body">
+        <p>Real trials ran in stages to separate calibration problems from box-size problems: same-type stacks first, then mixed pairs, then crooked mixed stacks. Each failure was traced to its cause before anything was retrained.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Symptom on the real arm</th><th>Root cause</th><th>Fix</th></tr></thead>
+            <tbody>
+              <tr><td>Carried boxes too low, slow moves</td><td>Real servos far softer than sim</td><td>Fitted servo model, retrained on 3,009 soft-servo episodes</td></tr>
+              <tr><td>Released 2 cm high and 2–3 cm off</td><td>Wrist-camera model fitted from jaw tips only</td><td>ChArUco calibration of the wrist camera, new data, fine-tune</td></tr>
+              <tr><td>Hovered 1 cm above the stack</td><td>Clutter behind the arm in the front camera</td><td>Found by swapping image regions in an open-loop replay; masked that region</td></tr>
+              <tr><td>Off-centre release on mixed pairs</td><td>Policy hovers over the wrong-size box</td><td>Hybrid: the policy picks, a model-based place aims at a wrist-camera “look” at the stack</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>With those fixes, staged real trials went <strong>12/12</strong> on same-type stacks, <strong>10/10</strong> on mixed pairs and <strong>8/8</strong> on crooked 3–4 box mixed stacks.</p>
+        <figure>
+          <div class="fig-media zoomable"><img src="../assets/media/so101/charuco.jpg" alt="Grid of wrist-camera frames of a ChArUco calibration board" loading="lazy"></div>
+          <figcaption><span class="mono">Fig. 8</span><span>Wrist-camera calibration frames. The new model moved the camera mount by 21 mm and 8.6° from the first fit.</span></figcaption>
+        </figure>
+        <figure>
+          <div class="fig-media zoomable"><img src="../assets/media/so101/wrist-look.jpg" alt="Wrist-camera looks at the stack top with fitted box outlines" loading="lazy"></div>
+          <figcaption><span class="mono">Fig. 9</span><span>The wrist-camera look before placing: two looks from different angles must agree (≤ 6 mm, ≤ 8°) with the whole top box in view, or the place falls back to the front camera’s estimate.</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">06</span><h2>A referee you can trust, and a safe arm</h2></div></div>
+      <div class="chapter-body">
+        <p>A false “you lose” ruins a game, so the referee was built to be conservative and tested against recorded clips before it ever ran live.</p>
+        <ul>
+          <li><strong>State machine</strong> (setup → human turn / robot turn → settle → judge → game over) runs unchanged on the real arm, in MuJoCo, or on recorded video.</li>
+          <li><strong>Turn check:</strong> compares before and after frames from the calibrated front camera: did the old stack move, does the new box sit on the old top, did anything land on the table? It asks the player on screen only when it’s unsure.</li>
+          <li><strong>Box identity</strong> comes from which supply slot emptied, because the box types differ by only 1–4 px in height in the front view.</li>
+          <li><strong>Safety:</strong> a hand-detection thread freezes the arm when a hand enters the workspace and resumes 1 s after it leaves; the arm itself is masked out using the twin rendered at the current joint state. An e-stop key cuts torque, and a watchdog stops the game from hanging.</li>
+        </ul>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Collapse judging</th><th class="num">False calls</th><th class="num">Missed</th></tr></thead>
+            <tbody>
+              <tr><td>First version (cue-based)</td><td class="num">18 / 56</td><td class="num">11 / 26</td></tr>
+              <tr class="hl"><td>Turn check (photometric + box fit)</td><td class="num"><strong>0 / 56</strong></td><td class="num"><strong>1 / 26</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure>
+          <div class="fig-media dark">
+            <video data-autoplay muted loop playsinline preload="none" poster="../assets/media/so101/sim-game.jpg" aria-label="A full game simulated in MuJoCo, sped up three times">
+              <source src="../assets/media/so101/sim-game.mp4" type="video/mp4">
+            </video>
+          </div>
+          <figcaption><span class="mono">Fig. 10</span><span>A full game in the twin, the policy against a scripted “human” that places boxes with realistic error (3× speed). Ten of these exercise the controller and referee before any real game.</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">07</span><h2>Playing real people</h2></div></div>
+      <div class="chapter-body">
+        <p>In the first real games the robot placed 8 of 10 boxes and picked the right box every time. Playing real people turned up bugs the trials never did, and each fix was replayed against every recorded turn to confirm it changed nothing else.</p>
+        <ul>
+          <li><strong>Early key presses ended human turns:</strong> keys are now ignored for 1 s, and a turn with no slot emptied and almost no pixels changed counts as “no move yet”, not a loss.</li>
+          <li><strong>The robot modelled the wrong held box</strong> after the human took one from the template: the held box is now chosen only among slots the camera still sees as full.</li>
+          <li><strong>A 3–4 mm nudge read as a collapse</strong> on printed boxes: each band of the old stack may now shift up to 10 mm before counting as moved. A 2 cm push still loses.</li>
+        </ul>
+        <div class="note"><span class="label">What I’d do next</span>Randomise the background behind the arm with real images in the next data run instead of masking it, and train a goal-conditioned place so the robot can choose <em>where</em> to put a box to make the next turn harder.</div>
+        <figure>
+          <div class="fig-media zoomable"><img src="../assets/media/so101/sim-robot-view.jpg" alt="Sim front camera and wrist camera views side by side" loading="lazy"></div>
+          <figcaption><span class="mono">Fig. 11</span><span>What the policy sees: the 45° front camera and the wrist camera, rendered in the twin.</span></figcaption>
+        </figure>
+      </div>
+    </section>
+  </div>
+
+  <nav class="next" aria-label="Next project">
+    <div class="wrap">
+      <a href="airport-perception.html">
+        <div><p class="label">Next · 02</p><h2>Real-time surveillance perception</h2></div>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </nav>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap mono">
+    <span>© 2026 Max Chan</span>
+    <a href="mailto:maxchan352@gmail.com" style="text-decoration:none">maxchan352@gmail.com</a>
+  </div>
+</footer>
+
+<script src="../assets/js/site.js" defer></script>
+</body>
+</html>

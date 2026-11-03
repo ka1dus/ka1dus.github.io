@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Patrol-Robot Operator Assistant · Max Chan</title>
+  <meta name="description" content="An on-premise RAG assistant for patrol-robot operators: hybrid retrieval, deterministic resolvers and citation-checking guardrails that escalate instead of guessing.">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../" aria-label="Max Chan, home">
+      <img class="brand-mark" src="../assets/favicon.svg" alt="">
+      Max Chan
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="../#work">Work</a>
+      <a class="nav-hide" href="../#experience">Experience</a>
+      <a class="nav-hide" href="../#contact">Contact</a>
+      <a class="nav-cv" href="../assets/Max_Chan_Resume.pdf">Résumé</a>
+      <button class="theme-btn" type="button" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="cs-head">
+    <div class="wrap">
+      <a class="back mono" href="../#work">← All work</a>
+      <p class="label" style="margin-bottom:16px">Case study 03 · Botmind · 2026</p>
+      <h1>Patrol-robot operator assistant</h1>
+      <div class="cs-intro">
+        <p class="lede">
+          Operators at a command console run a fleet of rideable patrol robots. When something goes wrong they call a
+          service hotline. This assistant lets them fix common issues themselves, and it is built so that
+          <strong>when it doesn’t know, it says so</strong> rather than sounding confident and wrong.
+        </p>
+        <dl class="cs-facts">
+          <div><dt class="label">Role</dt><dd>Designed and built end to end: retrieval, guardrails, server, UI, evaluation</dd></div>
+          <div><dt class="label">Timeline</dt><dd>Aug 2026</dd></div>
+          <div><dt class="label">Stack</dt><dd>Python, FastAPI, Ollama / vLLM, Qwen2.5-14B, bge-small, BM25, pytest</dd></div>
+          <div><dt class="label">Deployment</dt><dd>Fully on-premise: no API keys, no data leaves the network</dd></div>
+        </dl>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="n">5<em>→</em>8<span style="font-size:.5em;color:var(--muted)">/8</span></div><p class="mono">schedule questions right after moving the lookup into code</p></div>
+        <div class="stat"><div class="n">3</div><p class="mono">independent checks before an answer is shown</p></div>
+        <div class="stat"><div class="n">0</div><p class="mono">calls to external services at runtime</p></div>
+        <div class="stat"><div class="n">&lt;10<em>s</em></div><p class="mono">per-question budget, sized for a GPU server</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">01</span><h2>Answers from the manual, or a handoff</h2></div></div>
+      <div class="chapter-body">
+        <p>The assistant answers only from the console’s user guide. Every answer cites the guide entries it used; anything the guide doesn’t cover goes straight to the hotline.</p>
+        <figure>
+          <div class="transcript">
+            <div class="msg you">I stopped a task by mistake, can I get it back?</div>
+            <div class="msg bot">No. A stopped task cannot be resumed; only a paused task can be resumed, using the Resume button. You will need to send the task again from the Tasks list.
+              <span class="mono">high confidence · grounded · guide p.13/14 · grounding 0.69</span></div>
+            <div class="msg you">What torque do the wheel bolts take?</div>
+            <div class="msg bot esc">That isn’t covered in the user guide. Please call the service hotline.
+              <span class="mono">escalated · out of scope</span></div>
+          </div>
+          <figcaption><span class="mono">Fig. 1</span><span>Two real exchanges from end-to-end testing: one grounded answer with its source, one out-of-scope question handed off.</span></figcaption>
+        </figure>
+        <p>It also writes for its reader. Operators send tasks from the console; officers ride the robots. So the console’s own actions are direct instructions (“Send the Undock task”), the officer’s are third person, and it never tells operators to “inform the console”, which would mean contacting themselves.</p>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">02</span><h2>Don’t trust the model’s confidence</h2></div></div>
+      <div class="chapter-body">
+        <p>Open-weight 7–32B models are much worse than frontier models at knowing what they don’t know. So the decision to escalate doesn’t rest on the model’s self-report. The safety guarantees live in code, not in the prompt.</p>
+        <figure>
+          <div class="diagram diagram-scroll">
+            <svg viewBox="0 0 1000 210" role="img" aria-label="Pipeline: question, hybrid retrieval, deterministic resolvers, local LLM with constrained JSON output, guardrails, then either an answer with sources or a hotline referral">
+              <defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" class="arrowhead"/></marker></defs>
+              <rect class="box" x="2" y="72" width="118" height="64" rx="5"/><text class="t" x="16" y="100">Question</text><text class="t-s" x="16" y="120">from console</text>
+              <path class="ln" d="M120 104 H142" marker-end="url(#ah)"/>
+              <rect class="box" x="146" y="72" width="176" height="64" rx="5"/><text class="t" x="160" y="100">Hybrid retrieval</text><text class="t-s" x="160" y="120">BM25 + dense, RRF</text>
+              <path class="ln" d="M322 104 H344" marker-end="url(#ah)"/>
+              <rect class="box" x="348" y="72" width="150" height="64" rx="5"/><text class="t" x="362" y="100">Resolvers</text><text class="t-s" x="362" y="120">compute, don’t ask</text>
+              <path class="ln" d="M498 104 H520" marker-end="url(#ah)"/>
+              <rect class="box" x="524" y="72" width="150" height="64" rx="5"/><text class="t" x="538" y="100">Local LLM</text><text class="t-s" x="538" y="120">constrained JSON</text>
+              <path class="ln" d="M674 104 H696" marker-end="url(#ah)"/>
+              <rect class="box-ink" x="700" y="72" width="126" height="64" rx="5"/><text class="t-inv" x="714" y="100">Guardrails</text><text class="t-s" x="714" y="120" style="fill:var(--bg);opacity:.7">fail closed</text>
+              <path class="ln" d="M826 92 H846 V40 H862" marker-end="url(#ah)"/>
+              <path class="ln-acc" d="M826 116 H846 V168 H862" marker-end="url(#ah)"/>
+              <rect class="box" x="866" y="12" width="132" height="56" rx="5"/><text class="t" x="880" y="36">Answer</text><text class="t-s" x="880" y="54">+ cited sources</text>
+              <rect class="box-accent" x="866" y="140" width="132" height="56" rx="5"/><text class="t" x="880" y="164">Hotline</text><text class="t-acc" x="880" y="182">referral</text>
+              <text class="t-s" x="160" y="160">top 4 + grounding score</text>
+              <text class="t-s" x="538" y="160">sources → type → answer</text>
+            </svg>
+          </div>
+          <figcaption><span class="mono">Fig. 2</span><span>Question to answer. Each stage can only add caution: any failure, including the server being down or unparseable output, ends in a hotline referral.</span></figcaption>
+        </figure>
+        <h3>Three checks, independent of the model</h3>
+        <ul>
+          <li><strong>Citation verification.</strong> The model must name the entry IDs it used. An ID that doesn’t exist, or wasn’t in the retrieved context, forces escalation: a fabricated citation is the fingerprint of a fabricated answer.</li>
+          <li><strong>Grounding gate.</strong> The retrieval score is a model-free signal of whether the guide covers the question at all. I measured in-scope and out-of-scope score ranges and set the threshold as a backstop.</li>
+          <li><strong>Confidence floor, fail closed.</strong> Low confidence escalates, and so does every error path.</li>
+        </ul>
+        <h3>Why both kinds of retrieval</h3>
+        <p>The manual is full of exact terms like “Go Park”, “Undock” and “ENABLE”. Dense embeddings handle paraphrase but miss rare exact tokens; BM25 is the reverse. Operators ask both kinds of question, so both run and the rankings are fused with reciprocal rank fusion.</p>
+        <h3>Schema order matters</h3>
+        <p>Constrained decoders generate fields in schema order. With <code>answer</code> first, a small model would write a good answer and then mislabel it. Putting <code>sources</code> first makes it commit to its evidence before classifying, and that fixed a real misclassification bug.</p>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">03</span><h2>A bigger model didn’t fix it. Code did.</h2></div></div>
+      <div class="chapter-body">
+        <p>Schedule questions (“who is charging at 9am?”) came back wrong about a third of the time, confidently. Retrieval was correct and the citation was real; the model simply misread a row of a six-row table.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Schedule questions (8)</th><th class="num">llama3.1:8b</th><th class="num">qwen2.5:14b</th></tr></thead>
+            <tbody>
+              <tr><td>Model reads the table</td><td class="num">5/8</td><td class="num">5/8</td></tr>
+              <tr class="hl"><td>Lookup computed in a resolver</td><td class="num"><strong>8/8</strong></td><td class="num"><strong>8/8</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Identical scores from both models, failing on different questions, showed it was a task problem, not a capacity problem. So a resolver parses the time, finds the slot in structured data and adds a “computed for this question” line before the model sees the entry. Resolvers only add context, never replace it, so one that doesn’t fire falls back to the old behaviour.</p>
+        <div class="note"><span class="label">Rule of thumb</span>Anything the model must calculate rather than read belongs in code.</div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <div class="chapter-side"><div class="sticky"><span class="num">04</span><h2>Latency you can plan for</h2></div></div>
+      <div class="chapter-body">
+        <p>I profiled where the time goes and sized the deployment from it. Decode speed is a hard floor set by memory bandwidth (9.3 tok/s for the 14B model on a 16 GB laptop, about 86 tok/s on a 24 GB GPU server with vLLM).</p>
+        <ul>
+          <li>Keeping the model resident removed a ~10 s reload after idle periods.</li>
+          <li>Retrieving 4 entries instead of 8 cut ~425 prompt tokens per question with no loss of recall: every correct entry already ranked #1 or #2.</li>
+          <li>A bounded request queue returns “busy, retry shortly” under load instead of letting latency grow, and every reply logs its elapsed time.</li>
+          <li>Admin-key auth for the web UI, a CLI for self-tests and threshold tuning, and a pytest suite covering the guardrails.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <nav class="next" aria-label="Next project">
+    <div class="wrap">
+      <a href="so101-stacking-game.html">
+        <div><p class="label">Next · 01</p><h2>Human vs Robot Box&#8209;Stacking</h2></div>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </nav>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap mono">
+    <span>© 2026 Max Chan</span>
+    <a href="mailto:maxchan352@gmail.com" style="text-decoration:none">maxchan352@gmail.com</a>
+  </div>
+</footer>
+
+<script src="../assets/js/site.js" defer></script>
+</body>
+</html>

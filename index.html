@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Max Chan · Robotics & Perception</title>
+  <meta name="description" content="Max Chan builds robot learning and perception systems: a sim-trained SO-101 arm that plays a stacking game against people, and real-time multi-model vision for patrol robots.">
+  <meta property="og:title" content="Max Chan · Robotics & Perception">
+  <meta property="og:description" content="Sim-to-real robot learning, real-time perception and applied LLM systems.">
+  <meta property="og:image" content="assets/media/so101/sim-carry.jpg">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Max Chan, home">
+      <img class="brand-mark" src="assets/favicon.svg" alt="">
+      Max Chan
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#work">Work</a>
+      <a class="nav-hide" href="#experience">Experience</a>
+      <a class="nav-hide" href="#contact">Contact</a>
+      <a class="nav-cv" href="assets/Max_Chan_Resume.pdf">Résumé</a>
+      <button class="theme-btn" type="button" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <h1>Max Chan</h1>
+      <p class="hero-lede">
+        I build <strong>robot learning and perception systems</strong>: an arm trained entirely in
+        simulation that plays a stacking game against people, and multi-model vision running on
+        patrol robots. Computer Science at NTU, Singapore.
+      </p>
+      <dl class="hero-meta">
+        <div><dt class="label">Now</dt><dd><span class="dot" aria-hidden="true"></span>Robot Engineering Intern, Botmind</dd></div>
+        <div><dt class="label">Also</dt><dd>Co-founder, JimaiConsulting</dd></div>
+        <div><dt class="label">Study</dt><dd>BComp Computer Science, NTU ’28</dd></div>
+        <div><dt class="label">Contact</dt><dd><a href="mailto:maxchan352@gmail.com">maxchan352@gmail.com</a></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="feature" aria-label="Featured project">
+    <div class="wrap reveal">
+      <div class="feature-frame">
+        <video data-autoplay muted loop playsinline preload="metadata"
+               poster="assets/media/so101/real-game-wide.jpg"
+               aria-label="Real game: a person and an SO-101 robot arm take turns stacking staple boxes">
+          <source src="assets/media/so101/real-game-wide.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="feature-bar">
+        <p class="label" style="margin:0">Featured · A real game, human vs SO-101 arm · Oct 2026</p>
+        <a href="work/so101-stacking-game.html">Read the case study <span>→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="work">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="label">Selected work · 04</p>
+        <h2>Projects, from the simulator to the field.</h2>
+      </div>
+
+      <ol class="work-list">
+        <li class="work-item reveal">
+          <a class="work-link" href="work/so101-stacking-game.html">
+            <span class="work-idx mono">01</span>
+            <div class="work-body">
+              <h3>Human vs Robot Box&#8209;Stacking <span class="arrow">↗</span></h3>
+              <p>A turn-based game against an SO-101 arm. Its skill was trained only in a calibrated
+                MuJoCo digital twin, and a camera referee judges every turn, so real games run with no human umpire.</p>
+              <div class="work-meta mono"><span>2026</span><span>Personal</span><span>MuJoCo · LeRobot ACT · OpenCV</span></div>
+            </div>
+            <div class="work-thumb">
+              <div class="thumb">
+                <video data-hover muted loop playsinline preload="none" poster="assets/media/so101/sim-game.jpg" aria-hidden="true">
+                  <source src="assets/media/so101/sim-game.mp4" type="video/mp4">
+                </video>
+                <span class="thumb-tag">MuJoCo twin · 3× speed</span>
+              </div>
+            </div>
+          </a>
+        </li>
+
+        <li class="work-item reveal">
+          <a class="work-link" href="work/airport-perception.html">
+            <span class="work-idx mono">02</span>
+            <div class="work-body">
+              <h3>Real-time surveillance perception <span class="arrow">↗</span></h3>
+              <p>Six detectors sharing one GPU on a patrol robot’s camera feed, exported to TensorRT FP16
+                for up to 2.4× faster inference while keeping 99.6%+ of PyTorch’s detections. Alerts go straight to the robot fleet.</p>
+              <div class="work-meta mono"><span>2026</span><span>Botmind</span><span>PyTorch · TensorRT · YOLO · ByteTrack</span></div>
+            </div>
+            <div class="work-thumb">
+              <div class="thumb">
+                <div class="thumb-data">
+                  <div class="big">365<small>FPS peak</small></div>
+                  <div class="bars" aria-label="Model latency, PyTorch versus TensorRT">
+                    <div class="row"><span>PyTorch</span><span class="track"><span class="fill" style="width:100%"></span></span><span>6.5 ms</span></div>
+                    <div class="row"><span>TensorRT</span><span class="track"><span class="fill accent" style="width:42%"></span></span><span>2.7 ms</span></div>
+                    <div class="row"><span>recall</span><span class="track"><span class="fill" style="width:99.6%"></span></span><span>≥99.6%</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
+        </li>
+
+        <li class="work-item reveal">
+          <a class="work-link" href="work/gibson-assistant.html">
+            <span class="work-idx mono">03</span>
+            <div class="work-body">
+              <h3>Patrol-robot operator assistant <span class="arrow">↗</span></h3>
+              <p>An on-premise RAG assistant for the operators of a rideable patrol robot. It answers only from the
+                user guide, checks its own citations, and hands off to the hotline instead of guessing.</p>
+              <div class="work-meta mono"><span>2026</span><span>Botmind</span><span>Local LLM · Hybrid retrieval · FastAPI</span></div>
+            </div>
+            <div class="work-thumb">
+              <div class="thumb">
+                <div class="chat-mini" aria-hidden="true">
+                  <div class="b q">I stopped a task by mistake, can I get it back?</div>
+                  <div class="b a">No. A stopped task can’t be resumed, only a paused one. Send the task again from the Tasks list.
+                    <span class="mono">high confidence · guide p.13/14</span></div>
+                  <div class="b q">What torque do the wheel bolts take?</div>
+                  <div class="b a">That isn’t covered in the user guide. Calling the hotline…<span class="mono">escalated · out of scope</span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+        </li>
+
+        <li class="work-item reveal">
+          <div class="work-link">
+            <span class="work-idx mono">04</span>
+            <div class="work-body">
+              <h3>WhatsApp lead-qualification agent</h3>
+              <p>An LLM agent for JimaiConsulting clients that answers inbound leads on WhatsApp, asks the
+                qualifying questions a salesperson would, then checks free slots and books the appointment itself
+                through tool calls to Google Calendar.</p>
+              <p>Built for production rather than a demo: triggers are idempotent, so a repeated webhook doesn’t
+                book twice, and failed calls are retried instead of losing the lead.</p>
+              <div class="work-meta mono"><span>2025–26</span><span>JimaiConsulting</span><span>LLM tool use · WhatsApp API · Google Calendar</span></div>
+            </div>
+            <div class="work-thumb">
+              <div class="thumb">
+                <ol class="flow-mini" aria-label="How the agent works">
+                  <li><span class="mono">01</span>Lead messages on WhatsApp</li>
+                  <li><span class="mono">02</span>Agent asks qualifying questions</li>
+                  <li><span class="mono">03</span>Checks free slots<em>tool call</em></li>
+                  <li><span class="mono">04</span>Books into Google Calendar<em>tool call</em></li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="experience">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="label">Experience</p>
+        <h2>Where I’ve worked.</h2>
+      </div>
+
+      <div class="xp">
+        <article class="xp-row reveal">
+          <p class="xp-when mono">Jul 2026 – Dec 2026<br>Singapore</p>
+          <div class="xp-what">
+            <h3>Botmind</h3>
+            <p class="role">Robot Engineering Intern</p>
+            <ul>
+              <li>Ran six detectors concurrently on one GPU feed (YOLO, ByteTrack, pose estimation, monocular depth) in a threaded runtime, then exported to TensorRT FP16 for a 1.8–2.4× speedup (up to 365 FPS) with over 99.6% recall parity. <a href="work/airport-perception.html">Case study</a></li>
+              <li>Integrated detections into the robot fleet’s REST API, so each event raises an alert tied to its robot and camera, sent from a background queue with OAuth auto-renewal.</li>
+              <li>Field-deployed real-time PPE detection on a quadruped robot running on an edge device, from concept to a live client demo in an aircraft hangar in under 3 days.</li>
+              <li>Built an on-premise troubleshooting assistant for patrol-robot operators with hybrid retrieval and citation-checking guardrails. <a href="work/gibson-assistant.html">Case study</a></li>
+              <li>Built Grafana dashboards over robot fault-reporting logs to pinpoint errors in deployed robots.</li>
+            </ul>
+          </div>
+          <div class="xp-side">
+            <span class="chip">PyTorch</span><span class="chip">TensorRT</span><span class="chip">CUDA</span><span class="chip">YOLO</span><span class="chip">ByteTrack</span><span class="chip">Ollama</span><span class="chip">Grafana</span>
+          </div>
+        </article>
+
+        <article class="xp-row reveal">
+          <p class="xp-when mono">Nov 2025 – Present<br>Singapore</p>
+          <div class="xp-what">
+            <h3>JimaiConsulting Pte Ltd</h3>
+            <p class="role">Co-founder</p>
+            <ul>
+              <li>Built an LLM agent that qualifies leads over WhatsApp and books appointments through tool calls to Google Calendar, with idempotent triggers and retries in production.</li>
+              <li>Co-founded the company, reaching about $10,000 revenue in the first two months and 90% client retention after month one.</li>
+            </ul>
+          </div>
+          <div class="xp-side">
+            <span class="chip">LLM agents</span><span class="chip">Tool calling</span><span class="chip">WhatsApp API</span><span class="chip">Google Calendar</span>
+          </div>
+        </article>
+
+        <article class="xp-row reveal">
+          <p class="xp-when mono">Aug 2024 – May 2028</p>
+          <div class="xp-what">
+            <h3>Nanyang Technological University</h3>
+            <p class="role">Bachelor of Computing in Computer Science</p>
+          </div>
+          <div class="xp-side"></div>
+        </article>
+
+        <article class="xp-row reveal">
+          <p class="xp-when mono">Jan 2020 – Dec 2021</p>
+          <div class="xp-what">
+            <h3>Tampines Meridian Junior College</h3>
+            <p class="role">Singapore-Cambridge GCE A-Levels</p>
+          </div>
+          <div class="xp-side"></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="skills">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="label">Toolbox</p>
+        <h2>What I work with.</h2>
+      </div>
+      <div class="skills reveal">
+        <div>
+          <h3>Robotics</h3>
+          <ul><li>LeRobot</li><li>Imitation learning (ACT)</li><li>MuJoCo</li><li>Inverse kinematics</li><li>Domain randomisation</li><li>Digital twins</li><li>Teleoperation</li></ul>
+        </div>
+        <div>
+          <h3>Vision</h3>
+          <ul><li>PyTorch</li><li>YOLO, ByteTrack</li><li>OpenCV</li><li>TensorRT, CUDA, ONNX</li><li>Pose estimation</li><li>Camera calibration</li></ul>
+        </div>
+        <div>
+          <h3>Languages</h3>
+          <ul><li>Python</li><li>C++</li><li>SQL</li></ul>
+        </div>
+        <div>
+          <h3>Systems</h3>
+          <ul><li>Linux (WSL)</li><li>Git</li><li>REST APIs</li><li>Local LLM serving (Ollama, vLLM)</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="wrap">
+      <p class="label" style="margin-bottom:20px">Get in touch</p>
+      <h2><a href="mailto:maxchan352@gmail.com">maxchan352@gmail.com</a></h2>
+      <div class="contact-links">
+        <a href="https://www.linkedin.com/in/maxchan123">LinkedIn ↗</a>
+        <a href="https://github.com/ka1dus">GitHub ↗</a>
+        <a href="assets/Max_Chan_Resume.pdf">Résumé (PDF) ↗</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap mono">
+    <span>© 2026 Max Chan</span>
+    <span>Singapore · Updated Nov 2026</span>
+  </div>
+</footer>
+
+<script src="assets/js/site.js" defer></script>
+</body>
+</html>
