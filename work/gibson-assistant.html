@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Patrol-Robot Operator Assistant · Max Chan</title>
-  <meta name="description" content="An on-premise RAG assistant for patrol-robot operators: hybrid retrieval, deterministic resolvers and citation-checking guardrails that escalate instead of guessing.">
+  <meta name="description" content="An on-premise RAG assistant for patrol-robot operators that uses hybrid retrieval, deterministic resolvers and citation-checking guardrails, and escalates instead of guessing.">
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,10 +46,10 @@
           <strong>when it doesn’t know, it says so</strong> rather than sounding confident and wrong.
         </p>
         <dl class="cs-facts">
-          <div><dt class="label">Role</dt><dd>Designed and built end to end: retrieval, guardrails, server, UI, evaluation</dd></div>
+          <div><dt class="label">Role</dt><dd>Designed and built end to end, including retrieval, guardrails, server, UI and evaluation</dd></div>
           <div><dt class="label">Timeline</dt><dd>Aug 2026</dd></div>
           <div><dt class="label">Stack</dt><dd>Python, FastAPI, Ollama / vLLM, Qwen2.5-14B, bge-small, BM25, pytest</dd></div>
-          <div><dt class="label">Deployment</dt><dd>Fully on-premise: no API keys, no data leaves the network</dd></div>
+          <div><dt class="label">Deployment</dt><dd>Fully on-premise, with no API keys and no data leaving the network</dd></div>
         </dl>
       </div>
 
@@ -66,19 +66,19 @@
     <section class="chapter">
       <div class="chapter-side"><div class="sticky"><span class="num">01</span><h2>Answers from the manual, or a handoff</h2></div></div>
       <div class="chapter-body">
-        <p>The assistant answers only from the console’s user guide. Every answer cites the guide entries it used; anything the guide doesn’t cover goes straight to the hotline.</p>
+        <p>The assistant answers only from the console’s user guide. Every answer cites the guide entries it used, and anything the guide doesn’t cover goes straight to the hotline.</p>
         <figure>
           <div class="transcript">
             <div class="msg you">I stopped a task by mistake, can I get it back?</div>
-            <div class="msg bot">No. A stopped task cannot be resumed; only a paused task can be resumed, using the Resume button. You will need to send the task again from the Tasks list.
+            <div class="msg bot">No. A stopped task cannot be resumed. Only a paused task can be resumed, using the Resume button. You will need to send the task again from the Tasks list.
               <span class="mono">high confidence · grounded · guide p.13/14 · grounding 0.69</span></div>
             <div class="msg you">What torque do the wheel bolts take?</div>
             <div class="msg bot esc">That isn’t covered in the user guide. Please call the service hotline.
               <span class="mono">escalated · out of scope</span></div>
           </div>
-          <figcaption><span class="mono">Fig. 1</span><span>Two real exchanges from end-to-end testing: one grounded answer with its source, one out-of-scope question handed off.</span></figcaption>
+          <figcaption><span class="mono">Fig. 1</span><span>Two real exchanges from end-to-end testing. The first is a grounded answer with its source, the second an out-of-scope question handed off.</span></figcaption>
         </figure>
-        <p>It also writes for its reader. Operators send tasks from the console; officers ride the robots. So the console’s own actions are direct instructions (“Send the Undock task”), the officer’s are third person, and it never tells operators to “inform the console”, which would mean contacting themselves.</p>
+        <p>It also writes for its reader. Operators send tasks from the console, and officers ride the robots. So the console’s own actions are direct instructions (“Send the Undock task”), the officer’s are third person, and it never tells operators to “inform the console”, which would mean contacting themselves.</p>
       </div>
     </section>
 
@@ -88,7 +88,7 @@
         <p>Open-weight 7–32B models are much worse than frontier models at knowing what they don’t know. So the decision to escalate doesn’t rest on the model’s self-report. The safety guarantees live in code, not in the prompt.</p>
         <figure>
           <div class="diagram diagram-scroll">
-            <svg viewBox="0 0 1000 210" role="img" aria-label="Pipeline: question, hybrid retrieval, deterministic resolvers, local LLM with constrained JSON output, guardrails, then either an answer with sources or a hotline referral">
+            <svg viewBox="0 0 1000 210" role="img" aria-label="Pipeline from question to hybrid retrieval, deterministic resolvers, a local LLM with constrained JSON output and guardrails, then either an answer with sources or a hotline referral">
               <defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" class="arrowhead"/></marker></defs>
               <rect class="box" x="2" y="72" width="118" height="64" rx="5"/><text class="t" x="16" y="100">Question</text><text class="t-s" x="16" y="120">from console</text>
               <path class="ln" d="M120 104 H142" marker-end="url(#ah)"/>
@@ -107,16 +107,16 @@
               <text class="t-s" x="538" y="160">sources → type → answer</text>
             </svg>
           </div>
-          <figcaption><span class="mono">Fig. 2</span><span>Question to answer. Each stage can only add caution: any failure, including the server being down or unparseable output, ends in a hotline referral.</span></figcaption>
+          <figcaption><span class="mono">Fig. 2</span><span>Question to answer. Each stage can only add caution, so any failure, including the server being down or unparseable output, ends in a hotline referral.</span></figcaption>
         </figure>
         <h3>Three checks, independent of the model</h3>
         <ul>
-          <li><strong>Citation verification.</strong> The model must name the entry IDs it used. An ID that doesn’t exist, or wasn’t in the retrieved context, forces escalation: a fabricated citation is the fingerprint of a fabricated answer.</li>
+          <li><strong>Citation verification.</strong> The model must name the entry IDs it used. An ID that doesn’t exist, or wasn’t in the retrieved context, forces escalation, because a fabricated citation is the fingerprint of a fabricated answer.</li>
           <li><strong>Grounding gate.</strong> The retrieval score is a model-free signal of whether the guide covers the question at all. I measured in-scope and out-of-scope score ranges and set the threshold as a backstop.</li>
           <li><strong>Confidence floor, fail closed.</strong> Low confidence escalates, and so does every error path.</li>
         </ul>
         <h3>Why both kinds of retrieval</h3>
-        <p>The manual is full of exact terms like “Go Park”, “Undock” and “ENABLE”. Dense embeddings handle paraphrase but miss rare exact tokens; BM25 is the reverse. Operators ask both kinds of question, so both run and the rankings are fused with reciprocal rank fusion.</p>
+        <p>The manual is full of exact terms like “Go Park”, “Undock” and “ENABLE”. Dense embeddings handle paraphrase but miss rare exact tokens, and BM25 is the reverse. Operators ask both kinds of question, so both run and the rankings are fused with reciprocal rank fusion.</p>
         <h3>Schema order matters</h3>
         <p>Constrained decoders generate fields in schema order. With <code>answer</code> first, a small model would write a good answer and then mislabel it. Putting <code>sources</code> first makes it commit to its evidence before classifying, and that fixed a real misclassification bug.</p>
       </div>
@@ -125,7 +125,7 @@
     <section class="chapter">
       <div class="chapter-side"><div class="sticky"><span class="num">03</span><h2>A bigger model didn’t fix it. Code did.</h2></div></div>
       <div class="chapter-body">
-        <p>Schedule questions (“who is charging at 9am?”) came back wrong about a third of the time, confidently. Retrieval was correct and the citation was real; the model simply misread a row of a six-row table.</p>
+        <p>Schedule questions (“who is charging at 9am?”) came back wrong about a third of the time, confidently. Retrieval was correct and the citation was real. The model simply misread a row of a six-row table.</p>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Schedule questions (8)</th><th class="num">llama3.1:8b</th><th class="num">qwen2.5:14b</th></tr></thead>
@@ -146,7 +146,7 @@
         <p>I profiled where the time goes and sized the deployment from it. Decode speed is a hard floor set by memory bandwidth (9.3 tok/s for the 14B model on a 16 GB laptop, about 86 tok/s on a 24 GB GPU server with vLLM).</p>
         <ul>
           <li>Keeping the model resident removed a ~10 s reload after idle periods.</li>
-          <li>Retrieving 4 entries instead of 8 cut ~425 prompt tokens per question with no loss of recall: every correct entry already ranked #1 or #2.</li>
+          <li>Retrieving 4 entries instead of 8 cut ~425 prompt tokens per question with no loss of recall, since every correct entry already ranked #1 or #2.</li>
           <li>A bounded request queue returns “busy, retry shortly” under load instead of letting latency grow, and every reply logs its elapsed time.</li>
           <li>Admin-key auth for the web UI, a CLI for self-tests and threshold tuning, and a pytest suite covering the guardrails.</li>
         </ul>

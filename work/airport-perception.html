@@ -41,15 +41,15 @@
       <h1>Real-time surveillance perception</h1>
       <div class="cs-intro">
         <p class="lede">
-          A patrolling security robot streams one wide camera feed. The job: watch it for fire, falls, running,
-          crowding, fights and unattended bags <strong>all at once, on one GPU</strong>, and turn each detection
+          A patrolling security robot streams one wide camera feed. The job was to watch it for fire, falls, running,
+          crowding, fights and unattended bags <strong>all at once, on one GPU</strong>, and to turn each detection
           into an alert the robot fleet can act on.
         </p>
         <dl class="cs-facts">
-          <div><dt class="label">Role</dt><dd>Robot Engineering Intern: runtime, TensorRT export, benchmarks, alert integration</dd></div>
+          <div><dt class="label">Role</dt><dd>Robot Engineering Intern, covering the runtime, TensorRT export, benchmarks and alert integration</dd></div>
           <div><dt class="label">Timeline</dt><dd>Jul – Dec 2026</dd></div>
           <div><dt class="label">Stack</dt><dd>PyTorch, TensorRT, CUDA, Ultralytics YOLO, ByteTrack, OpenPifPaf, Streamlit</dd></div>
-          <div><dt class="label">Target</dt><dd>One RTX 4070 Ti SUPER; also runs on Apple MPS and CPU</dd></div>
+          <div><dt class="label">Target</dt><dd>One RTX 4070 Ti SUPER, and it also runs on Apple MPS and CPU</dd></div>
         </dl>
       </div>
 
@@ -75,7 +75,7 @@
         </ul>
         <figure>
           <div class="diagram diagram-scroll">
-            <svg viewBox="0 0 900 330" role="img" aria-label="Architecture: robot camera to a shared frame grabber, fanned out to six detector threads, which feed an alert publisher and the operator UI">
+            <svg viewBox="0 0 900 330" role="img" aria-label="Architecture diagram. The robot camera feeds a shared frame grabber, which fans out to six detector threads that feed an alert publisher and the operator UI">
               <defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" class="arrowhead"/></marker></defs>
               <rect class="box" x="4" y="135" width="140" height="60" rx="5"/>
               <text class="t" x="18" y="160">Robot camera</text><text class="t-s" x="18" y="180">RTSP over TCP</text>
@@ -105,13 +105,13 @@
               <text class="t-s" x="390" y="6" style="font-size:10px">ONE THREAD EACH</text>
             </svg>
           </div>
-          <figcaption><span class="mono">Fig. 1</span><span>Runtime architecture. The video shown to operators stays clean: models report only text labels, and an alert carries an unannotated snapshot of the moment.</span></figcaption>
+          <figcaption><span class="mono">Fig. 1</span><span>Runtime architecture. The video shown to operators stays clean, because models report only text labels and an alert carries an unannotated snapshot of the moment.</span></figcaption>
         </figure>
       </div>
     </section>
 
     <section class="chapter">
-      <div class="chapter-side"><div class="sticky"><span class="num">02</span><h2>TensorRT: faster, and provably the same</h2></div></div>
+      <div class="chapter-side"><div class="sticky"><span class="num">02</span><h2>Faster with TensorRT, and provably the same</h2></div></div>
       <div class="chapter-body">
         <p>Because all detectors share one GPU, what matters is the total GPU time per sweep. I exported the YOLO models to TensorRT FP16 engines and wrote a benchmark harness that measures both raw model latency and the deployed per-frame cost through the real detector code.</p>
         <figure>
@@ -165,7 +165,7 @@
             </tbody>
           </table>
         </div>
-        <p>Zero class mismatches, and small-object recall held up as well: 0.993 over 838 small boxes for crowd, 1.000 over 208 for bags. So distant people and small bags aren’t being lost in FP16.</p>
+        <p>Zero class mismatches, and small-object recall held up as well, at 0.993 over 838 small boxes for crowd and 1.000 over 208 for bags. So distant people and small bags aren’t being lost in FP16.</p>
       </div>
     </section>
 
@@ -176,18 +176,18 @@
         <ul>
           <li>Resolves camera → robot from the stream, creates the alert, then uploads the snapshot as its preview image.</li>
           <li>Sent from a <strong>background queue</strong>, so a slow network never blocks detection.</li>
-          <li><strong>OAuth tokens renew automatically</strong>; network errors and 5xx responses retry with backoff; at most one alert per type every 20 s to avoid floods.</li>
-          <li>Each detector debounces its trigger: an alert latches only after it persists for several frames, with a cooldown before it can fire again, so one noisy frame doesn’t page anyone.</li>
+          <li><strong>OAuth tokens renew automatically</strong>, network errors and 5xx responses retry with backoff, and each alert type fires at most once every 20 s to avoid floods.</li>
+          <li>Each detector debounces its trigger. An alert latches only after it persists for several frames, with a cooldown before it can fire again, so one noisy frame doesn’t page anyone.</li>
         </ul>
         <p>Alongside this I built Grafana dashboards over the fleet’s fault-reporting logs, so errors on deployed robots could be pinned down without digging through raw logs.</p>
       </div>
     </section>
 
     <section class="chapter">
-      <div class="chapter-side"><div class="sticky"><span class="num">04</span><h2>In the field: PPE detection on a quadruped</h2></div></div>
+      <div class="chapter-side"><div class="sticky"><span class="num">04</span><h2>PPE detection on a quadruped, in the field</h2></div></div>
       <div class="chapter-body">
-        <p>I took real-time PPE detection from concept to a live client demo on a quadruped robot in an aircraft hangar <strong>in under three days</strong>: the robot walks the hangar floor and flags anyone missing required safety gear.</p>
-        <p>The constraints were the opposite of the airport pipeline’s:</p>
+        <p>I took real-time PPE detection from concept to a live client demo on a quadruped robot in an aircraft hangar <strong>in under three days</strong>. The robot walks the hangar floor and flags anyone missing required safety gear.</p>
+        <p>The constraints were the opposite of the airport pipeline’s.</p>
         <ul>
           <li><strong>Edge device, not a desktop GPU.</strong> Detection runs on the robot itself, so the model and frame size had to fit its compute budget while staying real-time.</li>
           <li><strong>A moving camera.</strong> A walking robot sees people at changing distances and angles, which is harder than the fixed cameras most PPE models are trained on.</li>
