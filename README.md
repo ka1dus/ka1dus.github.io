@@ -10,7 +10,7 @@ work/gibson-assistant.html      case study 03 (Botmind)
 assets/css/site.css             all styles (colour tokens at the top, light + dark)
 assets/js/site.js               theme toggle, scroll reveal, video play-on-view, image lightbox
 assets/media/                   compressed videos (H.264, faststart) and JPEG stills
-assets/Max_Chan_Resume_Menlo.pdf  linked from the header and contact section
+assets/MaxChanResume.pdf          linked from the header and contact section
 assets/Max_Chan_Resume.pdf        earlier general résumé (not linked)
 ```
 
